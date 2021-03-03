@@ -1,114 +1,112 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
+import React, { Component } from 'react'
+import { Text, View, TouchableOpacity, Animated, StyleSheet } from 'react-native'
+import LottieView from 'lottie-react-native';
 
-import React from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  StatusBar,
-} from 'react-native';
+export default class App extends Component {
+  constructor(props){
+    super(props)
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+    this.state={
+      pressed: false,
+      theme: "Light"
+    }
+    this.shakeAnimation = new Animated.Value(0);
+    this.changeTheme = new Animated.Value(0);
+  }
 
-const App: () => React$Node = () => {
-  return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
-            </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </>
-  );
-};
+  toggleAnimation = () => {
 
+    this.setState({pressed: !this.state.pressed })
+
+    this.state.pressed ? this.animation.play(60, 120) : this.animation.play(0, 60)
+
+    Animated.timing(this.shakeAnimation, {
+      toValue: this.state.pressed ? 0 : 50, 
+      duration: 900, 
+      useNativeDriver: true
+    }).start()
+
+    this.setState({theme: this.state.pressed ? "Light" : "Dark"})
+
+    Animated.timing(this.changeTheme, {
+      toValue: this.state.pressed ? 0 : 1, 
+      duration: 900, 
+      useNativeDriver: false
+    }).start()
+  }
+
+  render() {
+
+    const boxInterpolation =  this.changeTheme.interpolate({
+      inputRange: [0, 1],
+      outputRange:["rgb(255,255,255)" , "rgb(0,0,0)"]
+    })
+
+    const textInterpolation =  this.changeTheme.interpolate({
+      inputRange: [0, 1],
+      outputRange:["rgb(0,0,0)", "rgb(255,255,255)"]
+    })
+  
+    const animatedStyle = {
+      backgroundColor: boxInterpolation
+    }
+
+    const animatedStyle2 = {
+      color: textInterpolation
+    }
+
+    return (
+      <Animated.View style={{...styles.box, ...animatedStyle}}>
+        <View style={{alignItems: "flex-end", padding: 20}}>
+          <TouchableOpacity
+            style={{
+              width: 100,
+              height: 50,
+              borderRadius: 25,
+              justifyContent: "center",
+              borderWidth: 2,
+              borderColor: "grey",
+            }}
+            onPress={this.toggleAnimation}
+            activeOpacity={1}
+          >
+            <Animated.View style={{
+              transform: [{translateX: this.shakeAnimation}]
+            }}>
+              <LottieView 
+              style={{
+                width: 90, 
+                height: 90,
+                marginLeft: -11,
+              }}
+              ref={animation => {
+                this.animation = animation;
+              }}
+              source={require('./32532-day-night.json')}
+              loop={false}
+            />
+            </Animated.View>
+          </TouchableOpacity>
+        </View>
+        <View style={{flex:2,justifyContent:"center", alignItems: "center"}}>
+            <Animated.Text style={{...styles.text1, ...animatedStyle2}}>This is a test</Animated.Text>
+            <Animated.Text style={{...styles.text2, ...animatedStyle2}}>{this.state.theme} mode</Animated.Text>
+        </View>
+      </Animated.View>
+    )
+  }
+}
 const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
+  box:{
+    flex: 1,
+    backgroundColor: "white"
   },
-  engine: {
-    position: 'absolute',
-    right: 0,
+  text1:{
+    fontSize:40,
+    color: "black"
   },
-  body: {
-    backgroundColor: Colors.white,
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
-  },
+  text2:{
+    fontSize:20,
+    color: "black"
+  }
 });
-
-export default App;
